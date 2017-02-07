@@ -2,6 +2,7 @@ package com.android.core.net;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -32,34 +33,36 @@ public class RetrofitClient {
     private static OkHttpRequestInterceptor requestInterceptor;
 
     /**
-     * 无参数  实例化
+     * 添加头部信息
      *
      * @return retrofitBuilder
      */
-    public static Retrofit getInstance (Map<String, Object> headerMaps) {
-
-        if (retrofitBuilder == null) {
-            retrofitBuilder =
-                new Retrofit.Builder ().addCallAdapterFactory (RxJavaCallAdapterFactory.create ());
-            loggingInterceptor = new HttpLoggingInterceptor ();
-            loggingInterceptor.setLevel (HttpLoggingInterceptor.Level.BODY);
-        }
-        if (headerMaps != null) {
-            requestInterceptor = new OkHttpRequestInterceptor (headerMaps);
-        } else {
-            requestInterceptor = new OkHttpRequestInterceptor ();
-        }
-
-        retrofitBuilder.baseUrl (baseUrl)
-            .addConverterFactory (GsonConverterFactory.create ())
-            .client (getClient ());
-
-        return retrofitBuilder.build ();
+    public static Retrofit getInstance (Map<String, Object> headerMaps,
+        Interceptor netWorkInterceptor) {
+        return getInstance (baseUrl, headerMaps, netWorkInterceptor);
     }
 
+    /**
+     * @param baseUrl
+     * @param headerMaps
+     * @param netWorkInterceptor
+     * @return
+     */
+    public static Retrofit getInstance (String baseUrl, Map<String, Object> headerMaps,
+        Interceptor netWorkInterceptor) {
+        return getInstance (baseUrl, headerMaps, netWorkInterceptor, null);
+    }
 
-    public static Retrofit getInstance (String baseUrl, Map<String, Object> headerMaps) {
-
+    /**
+     * 配置okhttp
+     * @param baseUrl   服务器地址
+     * @param headerMaps   头部信息
+     * @param netWorkInterceptor  网络拦截器
+     * @param commonInterceptor   公共参数拦截器
+     * @return
+     */
+    public static Retrofit getInstance (String baseUrl, Map<String, Object> headerMaps,
+        Interceptor netWorkInterceptor, Interceptor commonInterceptor) {
         if (retrofitBuilder == null) {
             retrofitBuilder =
                 new Retrofit.Builder ().addCallAdapterFactory (RxJavaCallAdapterFactory.create ());
@@ -71,9 +74,10 @@ public class RetrofitClient {
         } else {
             requestInterceptor = new OkHttpRequestInterceptor ();
         }
+
         retrofitBuilder.baseUrl (baseUrl)
             .addConverterFactory (GsonConverterFactory.create ())
-            .client (getClient ());
+            .client (getClient (commonInterceptor, netWorkInterceptor));
 
         return retrofitBuilder.build ();
     }
@@ -83,15 +87,22 @@ public class RetrofitClient {
      *
      * @return OkHttpClient
      */
-    public static OkHttpClient getClient () {
-
-        OkHttpClient httpClient = new OkHttpClient.Builder ().addInterceptor (requestInterceptor)
+    private static OkHttpClient getClient (Interceptor commonInterceptor,
+        Interceptor netWorkInterceptor) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder ();
+        builder.addInterceptor (requestInterceptor)
             .addInterceptor (loggingInterceptor)
             .readTimeout (10, TimeUnit.SECONDS)
             .writeTimeout (10, TimeUnit.SECONDS)
-            .connectTimeout (10, TimeUnit.SECONDS)
-            .build ();
+            .connectTimeout (10, TimeUnit.SECONDS);
 
-        return httpClient;
+        if (commonInterceptor != null) {
+            builder.addInterceptor (commonInterceptor);
+        }
+        if (netWorkInterceptor != null) {
+            builder.addNetworkInterceptor (netWorkInterceptor);
+        }
+
+        return builder.build ();
     }
 }

@@ -29,10 +29,20 @@ public abstract class BaseCoreNoPresenterActivity extends AppCompatActivity{
     }
 
     @Override public void setContentView (@LayoutRes int layoutResID) {
-        mLoadingLayout = new LoadingLayout (this,layoutResID);
+        mLoadingLayout = new LoadingLayout (this,layoutResID,getTitleLayout (),0);
         setContentView (mLoadingLayout);
         setSupportActionBar (mLoadingLayout.getToolbarView ());
     }
+
+    /**
+     * 标题栏默认布局，如果需要自定义，重写此方法即可，但是其中的点击事件就需要自己处理
+     * <p>如果子布局不需要标题栏，那么将此方法返回0</p>
+     * @return
+     */
+    @LayoutRes protected int getTitleLayout () {
+        return R.layout.layout_default_title;
+    }
+
 
     /** 子类可以重写改变状态栏颜色 */
     protected int setStatusBarColor() {

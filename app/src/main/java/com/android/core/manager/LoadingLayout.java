@@ -86,7 +86,7 @@ public class LoadingLayout extends CoordinatorLayout {
         this.mContext = context;
     }
 
-    public LoadingLayout (Context context, @LayoutRes int resId, @LayoutRes int titleResId) {
+    public LoadingLayout (Context context, @LayoutRes int resId, @LayoutRes int titleResId,int less) {
         super (context);
         this.mContext = context;
         this.titleResId = titleResId;
@@ -96,6 +96,9 @@ public class LoadingLayout extends CoordinatorLayout {
 
     private void build (int resId) {
 
+        if (resId==0){
+            throw new RuntimeException ("请在Activity或者Fragment中返回getLayoutResId的值");
+        }
         contentView = mInflate.inflate (resId, null);
 
         loadingPage = mInflate.inflate (loadingLayoutId, null);

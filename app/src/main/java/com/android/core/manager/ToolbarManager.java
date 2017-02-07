@@ -16,19 +16,10 @@ import com.android.core.R;
 /**
  * 默认的标题栏管理
  * <p>
- * <li>
- * 不要主动调用{@link ToolbarManager#initToolbar(Toolbar)}方法，否则会报错
- * </li>
- * <li>
- * 如果需要设置全局的文字颜色和布局，调用{@link ToolbarManager#getConfig()}里面的方法即可设置
- * </li>
- * <li>
+ * 不要主动调用initToolbar(Toolbar)方法，否则会报错
+ * 如果需要设置全局的文字颜色和布局，调用ToolbarManager#getConfig()里面的方法即可设置
  * 如果是自定义标题栏布局，那么此类的方法都不可用
- * </li>
- * <li>
  * 如果是局部设置文字颜色或者大小，调用setXXX()方法即可
- * </li>
- * </p>
  * Created by tengfei.lv on 2017/1/10.
  */
 public class ToolbarManager {
@@ -128,8 +119,8 @@ public class ToolbarManager {
 
         mLeftImageView.setImageResource (leftImageDefault);
         mCenterTextView.setTextSize (centerTextDefaultSize);
-        mCenterTextView.setTextColor (mToolbar.getContext ().getColor (centerTextDefaultColor));
-        mLeftTextView.setTextColor (mToolbar.getContext ().getColor (leftTextDefaultColor));
+        mCenterTextView.setTextColor (mToolbar.getContext ().getResources ().getColor (centerTextDefaultColor));
+        mLeftTextView.setTextColor (mToolbar.getContext ().getResources ().getColor (leftTextDefaultColor));
         mLeftTextView.setTextSize (leftTextDefaultSize);
     }
 
@@ -167,6 +158,7 @@ public class ToolbarManager {
         mLeftImageView.setVisibility (isShow ? View.VISIBLE : View.GONE);
         return Singleton.INSTANCE;
     }
+
 
     public ToolbarManager setLeftImageBackground (int resId) {
         isEnabled ();
@@ -217,6 +209,24 @@ public class ToolbarManager {
         return Singleton.INSTANCE;
     }
 
+    public ToolbarManager setLeftTextBackground (int resId) {
+        isEnabled ();
+        mLeftTextView.setBackgroundResource (resId);
+        return Singleton.INSTANCE;
+    }
+
+    public ToolbarManager setLeftTextBackground (Drawable drawable) {
+        isEnabled ();
+        mLeftTextView.setBackground (drawable);
+        return Singleton.INSTANCE;
+    }
+
+    public ToolbarManager setLeftTextBackgroundColor (int color) {
+        isEnabled ();
+        mLeftTextView.setBackgroundColor (color);
+        return Singleton.INSTANCE;
+    }
+
     /*--------------------------------中间布局---------------------------*/
     public ToolbarManager showCenterLayout (boolean isShow) {
         isEnabled ();
@@ -244,9 +254,10 @@ public class ToolbarManager {
     /*--------------------------------右边布局---------------------------*/
 
     /**
-     * 按照ui图，顺序的添加资源文件，如果有的文字是动态改变，那么可以先添加空串{@link ""},
+     * <p>
+     * 按照ui图，顺序的添加资源文件，如果有的文字是动态改变，那么可以先添加空串,
      * 然后在调用{@link #setRightTextFormIndex}进行设置文本内容
-     *
+     *</p>
      * @param resId
      *     资源文件的id，必须在R文件中可以找到id
      *
@@ -290,6 +301,36 @@ public class ToolbarManager {
         View view = mRightLayout.getChildAt (index);
         if (view != null && view instanceof TextView) {
             ((TextView) view).setText (text);
+        }
+        return Singleton.INSTANCE;
+    }
+
+    /**
+     * 设置右边布局中子view是否显示
+     * @param index 子view索引
+     * @param isShow  true,显示，false，隐藏
+     * @return
+     */
+    public ToolbarManager setRightChildViewIsShow(int index,boolean isShow){
+        isEnabled ();
+        View view = mRightLayout.getChildAt (index);
+        if (view!=null) {
+            view.setVisibility (isShow?View.VISIBLE:View.GONE);
+        }
+        return Singleton.INSTANCE;
+    }
+
+    /**
+     * 设置右边布局中子view的背景
+     * @param index 子view索引
+     * @param drawable  背景资源
+     * @return
+     */
+    public ToolbarManager setRightChildViewBackground(int index,Drawable drawable){
+        isEnabled ();
+        View view = mRightLayout.getChildAt (index);
+        if (view!=null) {
+            view.setBackground (drawable);
         }
         return Singleton.INSTANCE;
     }

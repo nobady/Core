@@ -1,13 +1,15 @@
 apply plugin: 'com.android.library'
 
+
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
+
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -41,5 +43,10 @@ dependencies {
     compile 'com.lzy.widget:imagepicker:0.3.2'
     compile files('libs/fastjson-1.1.52.android.jar')
     //上拉下拉,公共adapter和viewholder，各种点击事件
-    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.7.2'
+//    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.7.2'
+    compile 'com.android:commonAdapter:1.0.1'
 }
+
+
+apply from: '../bintray.gradle'
+

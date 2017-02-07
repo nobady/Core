@@ -21,5 +21,6 @@ public class BaseCoreApplication extends Application {
             .configTagPrefix(getPackageName ())
             .configShowBorders(false)
             .configLevel(LogLevel.TYPE_VERBOSE);
+
     }
 }

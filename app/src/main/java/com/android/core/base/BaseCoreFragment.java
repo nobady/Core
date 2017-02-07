@@ -22,7 +22,7 @@ public abstract class BaseCoreFragment<V extends BaseCoreView, P extends BaseCor
     @Nullable @Override
     public View onCreateView (LayoutInflater inflater, @Nullable ViewGroup container,
         @Nullable Bundle savedInstanceState) {
-        mLoadingLayout = new LoadingLayout (getContext (),getLayoutResId ());
+        mLoadingLayout = new LoadingLayout (getContext (),getLayoutResId (),0,0);
         mLoadingLayout.setOnReloadListener (new LoadingLayout.OnReloadListener () {
             @Override public void onReload (View v) {
                 onReloadClick ();

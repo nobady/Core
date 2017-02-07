@@ -29,7 +29,7 @@ public abstract class BaseCoreActivity<V extends BaseCoreView, P extends BaseCor
     }
 
     @Override public void setContentView (@LayoutRes int layoutResID) {
-        mLoadingLayout = new LoadingLayout (this, layoutResID,getTitleLayout ());
+        mLoadingLayout = new LoadingLayout (this, layoutResID,getTitleLayout (),0);
         setContentView (mLoadingLayout);
         setSupportActionBar (mLoadingLayout.getToolbarView ());
         mLoadingLayout.setOnReloadListener (new LoadingLayout.OnReloadListener () {

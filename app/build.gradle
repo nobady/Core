@@ -44,7 +44,7 @@ dependencies {
     compile files('libs/fastjson-1.1.52.android.jar')
     //上拉下拉,公共adapter和viewholder，各种点击事件
 //    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.7.2'
-    compile 'com.android:commonAdapter:1.0.1'
+    compile 'com.afei:RecyclerViewAdapter:1.0.0'
 }
 
 

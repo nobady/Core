@@ -62,7 +62,7 @@ public class RxHttpUtils {
         return SingleTon.INSTANCE;
     }
 
-    private RxHttpUtils init () {
+    public RxHttpUtils init () {
         mHeaderMaps.clear ();
         return SingleTon.INSTANCE;
     }
@@ -72,7 +72,7 @@ public class RxHttpUtils {
      *
      * @return
      */
-    private RxHttpUtils init (String baseUrl) {
+    public RxHttpUtils init (String baseUrl) {
         mHeaderMaps.clear ();
         mUrl = baseUrl;
         return SingleTon.INSTANCE;
@@ -86,7 +86,7 @@ public class RxHttpUtils {
      *
      * @return
      */
-    private <T> T createApi (boolean isAddCommon, Class<T> cls) {
+    public <T> T createApi (boolean isAddCommon, Class<T> cls) {
 
         String url = mBaseUrl;
         if (!"".equals (mUrl)) {
@@ -101,12 +101,10 @@ public class RxHttpUtils {
     }
 
     /**
-     * 创建添加公共参数的接口对象
-     *
      * @return
      */
     public <T> T createApi (Class<T> cls) {
-        return createApi (true, cls);
+        return createApi (false, cls);
     }
 
     /**

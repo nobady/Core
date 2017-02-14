@@ -1,6 +1,7 @@
 package com.android.core.net;
 
 import android.util.Log;
+import com.apkfuns.logutils.LogUtils;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -144,10 +145,10 @@ public class OkhttpLoggingIntercepter implements Interceptor {
                 // Request body headers are only present when installed as a network interceptor. Force
                 // them to be included (when available) so there values are known.
                 if (requestBody.contentType() != null) {
-//                    logger.log("Content-Type: " + requestBody.contentType());
+                    logger.log("Content-Type: " + requestBody.contentType());
                 }
                 if (requestBody.contentLength() != -1) {
-//                    logger.log("Content-Length: " + requestBody.contentLength());
+                    logger.log("Content-Length: " + requestBody.contentLength());
                 }
             }
 
@@ -198,7 +199,7 @@ public class OkhttpLoggingIntercepter implements Interceptor {
         if (logHeaders) {
             Headers headers = response.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
-//                logger.log(headers.name(i) + ": " + headers.value(i));
+                logger.log(headers.name(i) + ": " + headers.value(i));
             }
 
             if (!logBody || !HttpEngine.hasBody(response)) {
@@ -226,7 +227,8 @@ public class OkhttpLoggingIntercepter implements Interceptor {
 
                 if (contentLength != 0) {
                     Log.e("okh","<<====================结果=====================");
-                    Log.e ("okh","result = "+buffer.clone().readString(charset));
+                    LogUtils.json (buffer.clone().readString(charset));
+                    //Log.e ("okh","result = "+buffer.clone().readString(charset));
                     Log.e("okh","===============================================>>");
                 }
 

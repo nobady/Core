@@ -28,19 +28,10 @@ public class RetrofitClient {
      */
     private static String baseUrl = "";
 
-    private static HttpLoggingInterceptor loggingInterceptor;
+    private static Interceptor loggingInterceptor;
 
     private static OkHttpRequestInterceptor requestInterceptor;
 
-    /**
-     * 添加头部信息
-     *
-     * @return retrofitBuilder
-     */
-    public static Retrofit getInstance (Map<String, Object> headerMaps,
-        Interceptor netWorkInterceptor) {
-        return getInstance (baseUrl, headerMaps, netWorkInterceptor);
-    }
 
     /**
      * @param baseUrl
@@ -48,9 +39,9 @@ public class RetrofitClient {
      * @param netWorkInterceptor
      * @return
      */
-    public static Retrofit getInstance (String baseUrl, Map<String, Object> headerMaps,
+    public static Retrofit getInstance (String baseUrl, Interceptor loggingInter,Map<String, Object> headerMaps,
         Interceptor netWorkInterceptor) {
-        return getInstance (baseUrl, headerMaps, netWorkInterceptor, null);
+        return getInstance (baseUrl, loggingInter,headerMaps, netWorkInterceptor, null);
     }
 
     /**
@@ -61,13 +52,17 @@ public class RetrofitClient {
      * @param commonInterceptor   公共参数拦截器
      * @return
      */
-    public static Retrofit getInstance (String baseUrl, Map<String, Object> headerMaps,
+    public static Retrofit getInstance (String baseUrl, Interceptor loggingInter,Map<String, Object> headerMaps,
         Interceptor netWorkInterceptor, Interceptor commonInterceptor) {
         if (retrofitBuilder == null) {
             retrofitBuilder =
                 new Retrofit.Builder ().addCallAdapterFactory (RxJavaCallAdapterFactory.create ());
-            loggingInterceptor = new HttpLoggingInterceptor ();
-            loggingInterceptor.setLevel (HttpLoggingInterceptor.Level.BODY);
+        }
+        if (loggingInter==null){
+            loggingInterceptor = new OkhttpLoggingIntercepter ();
+            ((OkhttpLoggingIntercepter)loggingInterceptor).setLevel (OkhttpLoggingIntercepter.Level.BODY);
+        }else {
+            loggingInterceptor =  loggingInter;
         }
         if (headerMaps != null) {
             requestInterceptor = new OkHttpRequestInterceptor (headerMaps);

@@ -38,6 +38,11 @@ public class RxHttpUtils {
      */
     private static Interceptor netWorkInterceptor;
 
+    /**
+     * log拦截器
+     */
+    private static Interceptor loggingInterceptor;
+
     private RxHttpUtils () {
     }
 
@@ -93,10 +98,11 @@ public class RxHttpUtils {
             url = mUrl;
         }
         if (isAddCommon) {
-            return RetrofitClient.getInstance (url, mHeaderMaps,netWorkInterceptor,
-                commonInterceptor).create (cls);
+            return RetrofitClient.getInstance (url, loggingInterceptor, mHeaderMaps,
+                netWorkInterceptor, commonInterceptor).create (cls);
         } else {
-            return RetrofitClient.getInstance (url, mHeaderMaps, netWorkInterceptor).create (cls);
+            return RetrofitClient.getInstance (url, loggingInterceptor, mHeaderMaps,
+                netWorkInterceptor).create (cls);
         }
     }
 
@@ -118,7 +124,7 @@ public class RxHttpUtils {
     }
 
     /**
-     * 添加公共参数
+     * 添加公共参数的拦截器
      *
      * @return
      */
@@ -134,6 +140,16 @@ public class RxHttpUtils {
      */
     public static RxHttpUtils addNetworkInterceptor (Interceptor interceptor) {
         netWorkInterceptor = interceptor;
+        return SingleTon.INSTANCE;
+    }
+
+    /**
+     * 添加自定义logging
+     *
+     * @return
+     */
+    public static RxHttpUtils addLoggingInterceptor (Interceptor interceptor) {
+        loggingInterceptor = interceptor;
         return SingleTon.INSTANCE;
     }
 }

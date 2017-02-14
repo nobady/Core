@@ -1,7 +1,7 @@
 package com.android.core.net;
 
 import android.util.Log;
-import com.apkfuns.logutils.LogUtils;
+import com.alibaba.fastjson.JSON;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -175,11 +175,6 @@ public class OkhttpLoggingIntercepter implements Interceptor {
                     charset = contentType.charset(UTF8);
                 }
 
-                //LogUtil.e ("<<=====================请求===============================");
-                //String jsonString = JsonHelper.toJSONString (buffer.readString(charset),true);
-                //LogUtil.e(jsonString);
-                //LogUtil.e ("==========================================================>>");
-
                 logger.log("--> END " + request.method()
                         + " (" + requestBody.contentLength() + "-byte body)");
             }
@@ -226,10 +221,9 @@ public class OkhttpLoggingIntercepter implements Interceptor {
                 }
 
                 if (contentLength != 0) {
-                    Log.e("okh","<<====================结果=====================");
-                    LogUtils.json (buffer.clone().readString(charset));
-                    //Log.e ("okh","result = "+buffer.clone().readString(charset));
-                    Log.e("okh","===============================================>>");
+                    Log.d("okh","<<====================结果=====================");
+                    Log.d ("okh", JSON.toJSONString (buffer.clone().readString(charset),true));
+                    Log.d("okh","===============================================>>");
                 }
 
                 logger.log("<-- END HTTP (" + buffer.size() + "-byte body)");

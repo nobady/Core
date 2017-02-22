@@ -59,8 +59,8 @@ public class RetrofitClient {
                 new Retrofit.Builder ().addCallAdapterFactory (RxJavaCallAdapterFactory.create ());
         }
         if (loggingInter==null){
-            loggingInterceptor = new OkhttpLoggingIntercepter ();
-            ((OkhttpLoggingIntercepter)loggingInterceptor).setLevel (OkhttpLoggingIntercepter.Level.BODY);
+            loggingInterceptor = new OkHttpLoggingInterceptor ();
+            ((OkHttpLoggingInterceptor)loggingInterceptor).setLevel (HttpLoggingInterceptor.Level.BODY);
         }else {
             loggingInterceptor =  loggingInter;
         }

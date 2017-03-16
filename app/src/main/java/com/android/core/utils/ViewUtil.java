@@ -37,8 +37,6 @@ public class ViewUtil {
     }
 
     public static <T extends View> T findViewById(View v, int id) {
-
-
         return (T) v.findViewById(id);
     }
 

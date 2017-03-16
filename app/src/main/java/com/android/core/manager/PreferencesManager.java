@@ -117,42 +117,36 @@ public class PreferencesManager {
 
     public PreferencesManager putString(String key, String value) {
         editor.putString(key, value);
-        editor.commit();
         return this;
     }
 
     public PreferencesManager putInt(String key, int value) {
         editor.putInt(key, value);
-        editor.commit();
         return this;
     }
 
     public PreferencesManager putFloat(String key, float value) {
         editor.putFloat(key, value);
-        editor.commit();
         return this;
     }
 
     public PreferencesManager putLong(String key, long value) {
         editor.putLong(key, value);
-        editor.commit();
         return this;
     }
 
     public PreferencesManager putBoolean(String key, boolean value) {
         editor.putBoolean(key, value);
-        editor.commit();
         return this;
     }
 
-    public void commit() {
-        editor.commit();
+    public void apply() {
+        editor.apply ();
     }
 
     @TargetApi (Build.VERSION_CODES.HONEYCOMB)
     public PreferencesManager putStringSet(String key, Set<String> value) {
         editor.putStringSet(key, value);
-        editor.commit();
         return this;
     }
 
@@ -164,7 +158,6 @@ public class PreferencesManager {
             out.writeObject(object);
             String objectVal = new String (Base64.encode(baos.toByteArray(), Base64.DEFAULT));
             editor.putString(key, objectVal);
-            editor.commit();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -215,13 +208,11 @@ public class PreferencesManager {
 
     public PreferencesManager remove(String key) {
         editor.remove(key);
-        editor.commit();
         return this;
     }
 
     public PreferencesManager removeAll() {
         editor.clear();
-        editor.commit();
         return this;
     }
 }

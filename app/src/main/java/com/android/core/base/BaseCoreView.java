@@ -1,6 +1,5 @@
 package com.android.core.base;
 
-import com.hannesdorfmann.mosby.mvp.MvpView;
 
 /**
  * Created by tengfei.lv on 2016/11/25.

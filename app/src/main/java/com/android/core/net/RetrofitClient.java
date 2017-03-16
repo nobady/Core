@@ -1,12 +1,14 @@
 package com.android.core.net;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
@@ -15,64 +17,100 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    private static Retrofit.Builder retrofitBuilder;
+    private Retrofit.Builder retrofitBuilder;
+
+    protected static class Builder {
+        private Interceptor loggingInterceptor;
+        private Interceptor networkInterceptor;
+        private List<Interceptor> interceptorList;
+        private String baseUrl;
+
+        private int connectTime = 10;
+
+        private Cache mCache;
+
+        Builder () {
+            interceptorList = new ArrayList<> ();
+        }
+
+        public Builder setLoggingInterceptor (Interceptor loggingInterceptor) {
+            this.loggingInterceptor = loggingInterceptor;
+            return this;
+        }
+
+        public Builder setNetworkInterceptor (Interceptor networkInterceptor) {
+            this.networkInterceptor = networkInterceptor;
+            return this;
+        }
+
+        public Builder setInterceptors (List<Interceptor> interceptorList) {
+            this.interceptorList = interceptorList;
+            return this;
+        }
+
+        public Builder setBaseUrl (String baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+
+        public Builder setConnectTime (int connectTime) {
+            this.connectTime = connectTime;
+            return this;
+        }
+
+        public Builder setCache (Cache cache) {
+            mCache = cache;
+            return this;
+        }
+
+        public Retrofit build () {
+            return new RetrofitClient (baseUrl, loggingInterceptor, networkInterceptor, interceptorList,
+                connectTime, mCache).getRetrofit ();
+        }
+    }
 
     /**
      * 私有化
      */
-    private RetrofitClient () {
+    private RetrofitClient (String baseUrl, Interceptor loggingInterceptor,
+        Interceptor networkInterceptor, List<Interceptor> interceptorList, int connectTime,
+        Cache cache) {
+        this.baseUrl = baseUrl;
+        this.loggingInterceptor = loggingInterceptor;
+        this.networkInterceptor = networkInterceptor;
+        this.mInterceptorList = interceptorList;
+        this.connectTime = connectTime;
+        mCache = cache;
     }
 
     /**
      * 自己服务的地址
      */
-    private static String baseUrl = "";
+    private String baseUrl = "";
 
-    private static Interceptor loggingInterceptor;
+    private Interceptor loggingInterceptor;
 
-    private static OkHttpRequestInterceptor requestInterceptor;
+    private Interceptor networkInterceptor;
 
+    private List<Interceptor> mInterceptorList;
 
-    /**
-     * @param baseUrl
-     * @param headerMaps
-     * @param netWorkInterceptor
-     * @return
-     */
-    public static Retrofit getInstance (String baseUrl, Interceptor loggingInter,Map<String, Object> headerMaps,
-        Interceptor netWorkInterceptor) {
-        return getInstance (baseUrl, loggingInter,headerMaps, netWorkInterceptor, null);
-    }
+    private int connectTime;
+    private Cache mCache;
 
-    /**
-     * 配置okhttp
-     * @param baseUrl   服务器地址
-     * @param headerMaps   头部信息
-     * @param netWorkInterceptor  网络拦截器
-     * @param commonInterceptor   公共参数拦截器
-     * @return
-     */
-    public static Retrofit getInstance (String baseUrl, Interceptor loggingInter,Map<String, Object> headerMaps,
-        Interceptor netWorkInterceptor, Interceptor commonInterceptor) {
+    protected Retrofit getRetrofit () {
         if (retrofitBuilder == null) {
             retrofitBuilder =
-                new Retrofit.Builder ().addCallAdapterFactory (RxJavaCallAdapterFactory.create ());
+                new Retrofit.Builder ().addCallAdapterFactory (RxJava2CallAdapterFactory.create ());
         }
-        if (loggingInter==null){
+        if (loggingInterceptor == null) {
             loggingInterceptor = new OkHttpLoggingInterceptor ();
-            ((OkHttpLoggingInterceptor)loggingInterceptor).setLevel (HttpLoggingInterceptor.Level.BODY);
-        }else {
-            loggingInterceptor =  loggingInter;
-        }
-        if (headerMaps != null) {
-            requestInterceptor = new OkHttpRequestInterceptor (headerMaps);
-        } else {
-            requestInterceptor = new OkHttpRequestInterceptor ();
+            ((OkHttpLoggingInterceptor) loggingInterceptor).setLevel (
+                HttpLoggingInterceptor.Level.BODY);
         }
 
         retrofitBuilder.baseUrl (baseUrl)
             .addConverterFactory (GsonConverterFactory.create ())
-            .client (getClient (commonInterceptor, netWorkInterceptor));
+            .client (getClient ());
 
         return retrofitBuilder.build ();
     }
@@ -82,22 +120,21 @@ public class RetrofitClient {
      *
      * @return OkHttpClient
      */
-    private static OkHttpClient getClient (Interceptor commonInterceptor,
-        Interceptor netWorkInterceptor) {
+    private OkHttpClient getClient () {
         OkHttpClient.Builder builder = new OkHttpClient.Builder ();
-        builder.addInterceptor (requestInterceptor)
-            .addInterceptor (loggingInterceptor)
-            .readTimeout (10, TimeUnit.SECONDS)
-            .writeTimeout (10, TimeUnit.SECONDS)
-            .connectTimeout (10, TimeUnit.SECONDS);
+        builder.addInterceptor (loggingInterceptor)
+            .retryOnConnectionFailure (true)
+            .cache (mCache)
+            .readTimeout (connectTime, TimeUnit.SECONDS)
+            .writeTimeout (connectTime, TimeUnit.SECONDS)
+            .connectTimeout (connectTime, TimeUnit.SECONDS);
 
-        if (commonInterceptor != null) {
-            builder.addInterceptor (commonInterceptor);
+        if (networkInterceptor != null) {
+            builder.addNetworkInterceptor (networkInterceptor);
         }
-        if (netWorkInterceptor != null) {
-            builder.addNetworkInterceptor (netWorkInterceptor);
+        for (int i = 0; i < mInterceptorList.size (); i++) {
+            builder.addInterceptor (mInterceptorList.get (i));
         }
-
         return builder.build ();
     }
 }

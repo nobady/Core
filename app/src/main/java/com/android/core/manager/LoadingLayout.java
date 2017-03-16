@@ -588,7 +588,7 @@ public class LoadingLayout extends CoordinatorLayout {
     /**
      * 全局配置的Class，对所有使用到的地方有效
      */
-    public static class Config {
+    private static class Config {
 
         public Config setErrorText (@NonNull String text) {
 

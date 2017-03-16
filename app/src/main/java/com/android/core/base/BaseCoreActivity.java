@@ -2,25 +2,26 @@ package com.android.core.base;
 
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
+import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.View;
 import com.android.core.R;
+import com.android.core.manager.AppManager;
 import com.android.core.manager.LoadingLayout;
-import com.android.core.manager.ToastManager;
-import com.hannesdorfmann.mosby.mvp.MvpActivity;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 /**
+ * 没有mvp的基类activity
  * Created by tengfei.lv on 2016/11/30.
  */
 
-public abstract class BaseCoreActivity<V extends BaseCoreView, P extends BaseCorePresenter<V>>
-    extends MvpActivity<V, P> implements BaseCoreView {
+public abstract class BaseCoreActivity extends AppCompatActivity{
 
-    private LoadingLayout mLoadingLayout;
+    public LoadingLayout mLoadingLayout;
 
     @Override protected void onCreate (Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
+        AppManager.getAppManager ().addActivity (this);
         initSystemBarTint ();
     }
 
@@ -67,6 +68,7 @@ public abstract class BaseCoreActivity<V extends BaseCoreView, P extends BaseCor
         tintManager.setStatusBarTintEnabled(true);
         // enable navigation bar tint
         tintManager.setNavigationBarTintEnabled(true);
+        tintManager.setStatusBarTintColor (setStatusBarColor ());
     }
 
     /**
@@ -80,51 +82,9 @@ public abstract class BaseCoreActivity<V extends BaseCoreView, P extends BaseCor
 
     public abstract void onReloadClick ();
 
-    @Override public void showLoadProgress () {
-        mLoadingLayout.setStatus (LoadingLayout.Loading);
+    @Override protected void onDestroy () {
+        super.onDestroy ();
+        AppManager.getAppManager ().finishActivity ();
     }
 
-    @Override public void hideLoadProgress () {
-        mLoadingLayout.setStatus (LoadingLayout.Success);
-    }
-
-    @Override public void showLoadDialog () {
-
-    }
-
-    @Override public void hideLoadDialog () {
-
-    }
-
-    @Override public void showLoadSuccess () {
-        mLoadingLayout.setStatus (LoadingLayout.Success);
-    }
-
-    @Override public void showLoadFailPager () {
-        mLoadingLayout.setStatus (LoadingLayout.Error);
-    }
-
-    @Override public void showEmptyPager () {
-        mLoadingLayout.setStatus (LoadingLayout.Empty);
-    }
-
-    @Override public void showNoNetError () {
-        mLoadingLayout.setStatus (LoadingLayout.No_Network);
-    }
-
-    @Override public void showToast (CharSequence toastMsg) {
-        ToastManager.showShort (this, toastMsg);
-    }
-
-    @Override public void setErrorMsg (String toastMsg) {
-        mLoadingLayout.setErrorText (toastMsg);
-    }
-
-    @Override public void setNotNetMsg (String toastMsg) {
-        mLoadingLayout.setNoNetworkText (toastMsg);
-    }
-
-    @Override public void setEmptyMsg (String toastMsg) {
-        mLoadingLayout.setEmptyText (toastMsg);
-    }
 }

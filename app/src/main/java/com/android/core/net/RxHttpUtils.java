@@ -1,49 +1,76 @@
 package com.android.core.net;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
+import okhttp3.Cache;
 import okhttp3.Interceptor;
 
 /**
  * 网络访问工具类
- * <p>使用方法：
- * 1.在Application中设置baseUrl{@link RxHttpUtils#initBaseUrl(String)}
- * 2.如果需要添加公共的参数，在Application中调用{@link RxHttpUtils#addCommonParamsInterceptor(Interceptor)}设置拦截器即可
- * 3.添加网络拦截器，在Application中调用{@link RxHttpUtils#addNetworkInterceptor(Interceptor)}
- * 3.如果需要特定的url，那么调用{@link RxHttpUtils#init(String)} ,否则调用
- * {@link RxHttpUtils#init()} 即可
- * 4.如果需要添加头部信息，调用{@link RxHttpUtils#addHeader(Map)}
- * </p>
+ * <p>
+ * 可以进行全局的属性设置，也可以在当前所在地方进行局部设置
+ * <p>
+ * 使用方法
+ * <p>
+ * <ul>
+ * <li>
+ * 全局设置：使用{@link RxHttpUtils#getmConfig()} 获取到全局配置器对象，然后调用其中的方法即可设置
+ * </li>
+ * <li>
+ * 局部设置：使用{@link RxHttpUtils#getInstance()} 获取到RxHttpUtils对象，然后调用其中的方法即可局部设置
+ * </li>
+ * </ul>
+ * <p>
+ * 属性设置完成后，调用{@link RxHttpUtils#createApi(Class)} 即可执行
+ * <p>
  * Created by tengfei.lv on 2017/1/3.
  */
 public class RxHttpUtils {
 
+    private static NetConfig mConfig = new NetConfig ();
+
     /**
-     * 全局的baseUrl，在application中设置
+     * 全局的baseUrl，
      */
     private static String mBaseUrl;
     /**
-     * 局部的baseUrl，如果需要，必须每次设置
-     */
-    private String mUrl = "";
-    private static Map<String, Object> mHeaderMaps = new TreeMap<> ();
-
-    /**
-     * 添加公共参数的拦截器
-     */
-    private static Interceptor commonInterceptor;
-
-    /**
      * 网络拦截器
      */
-    private static Interceptor netWorkInterceptor;
-
+    private static Interceptor mNetWorkInterceptor;
     /**
      * log拦截器
      */
-    private static Interceptor loggingInterceptor;
+    private static Interceptor mLoggingInterceptor;
+    /**
+     * 网络缓存配置
+     */
+    private static Cache mCache;
+    /**
+     * 链接、读写的超时时间
+     */
+    private static int connectTime = 10;
+    /**
+     * 保存全局拦截器集合
+     */
+    private static List<Interceptor> interceptorList = new ArrayList<> ();
+    /**
+     * 保存某一次的拦截器集合
+     */
+    private List<Interceptor> tempList = new ArrayList<> ();
+    /**
+     * 标记是否使用全局的拦截器还是某一次的拦截器
+     */
+    private boolean isTemp;
+
+    private RetrofitClient.Builder mBuilder;
 
     private RxHttpUtils () {
+        mBuilder = new RetrofitClient.Builder ();
+        mBuilder.setBaseUrl (mBaseUrl)
+            .setCache (mCache)
+            .setConnectTime (connectTime)
+            .setLoggingInterceptor (mLoggingInterceptor)
+            .setNetworkInterceptor (mNetWorkInterceptor);
     }
 
     private static class SingleTon {
@@ -51,11 +78,12 @@ public class RxHttpUtils {
     }
 
     /**
-     * 设置baseUrl，在请求之前设置即可，一般情况下在application中设置一次即可
+     * 获取全局信息配置对象
+     *
+     * @return
      */
-    public static RxHttpUtils initBaseUrl (String baseUrl) {
-        mBaseUrl = baseUrl;
-        return SingleTon.INSTANCE;
+    public static NetConfig getmConfig () {
+        return mConfig;
     }
 
     /**
@@ -67,89 +95,90 @@ public class RxHttpUtils {
         return SingleTon.INSTANCE;
     }
 
-    public RxHttpUtils init () {
-        mHeaderMaps.clear ();
-        return SingleTon.INSTANCE;
+    public RxHttpUtils setUrl (String url) {
+        mBuilder.setBaseUrl (url);
+        return this;
+    }
+
+    public RxHttpUtils setLoggingInterceptor (Interceptor loggingInterceptor) {
+        mBuilder.setLoggingInterceptor (loggingInterceptor);
+        return this;
+    }
+
+    public RxHttpUtils setNetworkInterceptor (Interceptor networkInterceptor) {
+        mBuilder.setNetworkInterceptor (networkInterceptor);
+        return this;
+    }
+
+    public RxHttpUtils setCache (Cache cache) {
+        mBuilder.setCache (cache);
+        return this;
+    }
+
+    public RxHttpUtils setConnectTime (int time) {
+        mBuilder.setConnectTime (time);
+        return this;
+    }
+
+    public RxHttpUtils setInterceptor (Interceptor interceptor) {
+        isTemp = true;
+        tempList.add (interceptor);
+        return this;
     }
 
     /**
-     * 使用动态的baseUrl
-     *
-     * @return
-     */
-    public RxHttpUtils init (String baseUrl) {
-        mHeaderMaps.clear ();
-        mUrl = baseUrl;
-        return SingleTon.INSTANCE;
-    }
-
-    /**
-     * @param isAddCommon
-     *     true,表示添加公共参数，false,不添加
      * @param cls
      *     要返回的接口对象
      *
      * @return
      */
-    public <T> T createApi (boolean isAddCommon, Class<T> cls) {
-
-        String url = mBaseUrl;
-        if (!"".equals (mUrl)) {
-            url = mUrl;
-        }
-        if (isAddCommon) {
-            return RetrofitClient.getInstance (url, loggingInterceptor, mHeaderMaps,
-                netWorkInterceptor, commonInterceptor).create (cls);
-        } else {
-            return RetrofitClient.getInstance (url, loggingInterceptor, mHeaderMaps,
-                netWorkInterceptor).create (cls);
-        }
-    }
-
-    /**
-     * @return
-     */
     public <T> T createApi (Class<T> cls) {
-        return createApi (false, cls);
+        if (isTemp) {
+            mBuilder.setInterceptors (tempList);
+        } else {
+            mBuilder.setInterceptors (interceptorList);
+        }
+        return mBuilder.build ().create (cls);
     }
 
     /**
-     * 添加头部参数
-     *
-     * @return
+     * 网络请求全局配置类
      */
-    public static RxHttpUtils addHeader (Map<String, Object> headerMaps) {
-        mHeaderMaps = headerMaps;
-        return SingleTon.INSTANCE;
-    }
+    private static class NetConfig {
 
-    /**
-     * 添加公共参数的拦截器
-     *
-     * @return
-     */
-    public static RxHttpUtils addCommonParamsInterceptor (Interceptor interceptor) {
-        commonInterceptor = interceptor;
-        return SingleTon.INSTANCE;
-    }
+        public NetConfig setLoggingInterceptor (Interceptor loggingInterceptor) {
+            mLoggingInterceptor = loggingInterceptor;
+            return mConfig;
+        }
 
-    /**
-     * 添加网络拦截器
-     *
-     * @return
-     */
-    public static RxHttpUtils addNetworkInterceptor (Interceptor interceptor) {
-        netWorkInterceptor = interceptor;
-        return SingleTon.INSTANCE;
-    }
+        public NetConfig setNetworkInterceptor (Interceptor networkInterceptor) {
+            mNetWorkInterceptor = networkInterceptor;
+            return mConfig;
+        }
 
-    /**
-     * 添加自定义logging
-     *
-     * @return
-     */
-    public static RxHttpUtils addLoggingInterceptor (Interceptor interceptor) {
-        loggingInterceptor = interceptor;
-        return SingleTon.INSTANCE;
+        public NetConfig setBaseUrl (String baseUrl) {
+            mBaseUrl = baseUrl;
+            return mConfig;
+        }
+
+        public NetConfig setCache (Cache cache) {
+            mCache = cache;
+            return mConfig;
+        }
+
+        public NetConfig setConnectTime (int time) {
+            connectTime = time;
+            return mConfig;
+        }
+
+        public NetConfig setInterceptor (Interceptor interceptor) {
+            interceptorList.add (interceptor);
+            return mConfig;
+        }
+
+        public NetConfig clearInteceptor () {
+            interceptorList.clear ();
+            return mConfig;
+        }
     }
 }

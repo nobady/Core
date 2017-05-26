@@ -9,17 +9,18 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.android.core.R;
 import com.android.core.utils.ViewUtil;
 
-public class LoadingLayout extends CoordinatorLayout {
+public class LoadingLayout  {
 
     public final static int Success = 0;
     public final static int Empty = 1;
@@ -46,7 +47,7 @@ public class LoadingLayout extends CoordinatorLayout {
     private TextView errorReloadBtn;
     private TextView networkReloadBtn;
 
-    private View contentView;//用户布局
+    private View userView;//用户布局
     private Toolbar toolbarView;//标题栏布局
     private AppBarLayout mAppBarLayout;
     private OnReloadListener listener;
@@ -72,34 +73,32 @@ public class LoadingLayout extends CoordinatorLayout {
     private static int toolbarLayoutId = R.layout.layout_toolbar;
 
     private LayoutInflater mInflate;
+    /*页面的跟布局，即id = android.R.id.content*/
+    protected ViewGroup rootView;
 
     /*标题栏布局id*/
     private int titleResId;
 
-    public LoadingLayout (Context context, AttributeSet attrs) {
-        super (context, attrs);
-        this.mContext = context;
-    }
-
-    public LoadingLayout (Context context, AttributeSet attrs, int defStyleAttr) {
-        super (context, attrs, defStyleAttr);
-        this.mContext = context;
-    }
-
-    public LoadingLayout (Context context, @LayoutRes int resId, @LayoutRes int titleResId,int less) {
-        super (context);
+    public LoadingLayout (Context context, View userView, @LayoutRes int titleResId,ViewGroup rootView) {
         this.mContext = context;
         this.titleResId = titleResId;
         mInflate = LayoutInflater.from (mContext);
-        build (resId);
+        this.userView = userView;
+        if (rootView==null){
+            rootView = new FrameLayout (context);
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+            rootView.setLayoutParams (params);
+        }
+        this.rootView = rootView;
+        build ();
     }
 
-    private void build (int resId) {
+    public View getRootView () {
+        return rootView;
+    }
 
-        if (resId==0){
-            throw new RuntimeException ("请在Activity或者Fragment中返回getLayoutResId的值");
-        }
-        contentView = mInflate.inflate (resId, null);
+    private void build () {
 
         loadingPage = mInflate.inflate (loadingLayoutId, null);
         errorPage = mInflate.inflate (R.layout.widget_error_page, null);
@@ -123,7 +122,7 @@ public class LoadingLayout extends CoordinatorLayout {
         errorReloadBtn = ViewUtil.findViewById (errorPage, R.id.error_reload_btn);
         networkReloadBtn = ViewUtil.findViewById (networkPage, R.id.no_network_reload_btn);
 
-        errorReloadBtn.setOnClickListener (new OnClickListener () {
+        errorReloadBtn.setOnClickListener (new View.OnClickListener () {
             @Override public void onClick (View v) {
 
                 if (listener != null) {
@@ -131,7 +130,7 @@ public class LoadingLayout extends CoordinatorLayout {
                 }
             }
         });
-        networkReloadBtn.setOnClickListener (new OnClickListener () {
+        networkReloadBtn.setOnClickListener (new View.OnClickListener () {
             @Override public void onClick (View v) {
 
                 if (listener != null) {
@@ -182,18 +181,22 @@ public class LoadingLayout extends CoordinatorLayout {
         CoordinatorLayout.LayoutParams layoutParams =
             new CoordinatorLayout.LayoutParams (ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
+
+        LinearLayout linearLayout = new LinearLayout (mContext);
+        linearLayout.setOrientation (LinearLayout.VERTICAL);
         if (titleResId != 0) {
-            setToolbarView ();
-            layoutParams.topMargin = getToolbarViewHeight ();
+            setToolbarView (linearLayout);
         }
 
-        this.addView (contentView, layoutParams);
+        linearLayout.addView (userView, layoutParams);
+
+        rootView.addView (linearLayout);
 
         layoutParams.gravity = Gravity.CENTER;
-        this.addView (networkPage, layoutParams);
-        this.addView (emptyPage, layoutParams);
-        this.addView (errorPage, layoutParams);
-        this.addView (loadingPage, layoutParams);
+        rootView.addView (networkPage, layoutParams);
+        rootView.addView (emptyPage, layoutParams);
+        rootView.addView (errorPage, layoutParams);
+        rootView.addView (loadingPage, layoutParams);
     }
 
     private int getToolbarViewHeight () {
@@ -210,12 +213,11 @@ public class LoadingLayout extends CoordinatorLayout {
         switch (status) {
             case Success:
 
-                contentView.setVisibility (View.VISIBLE);
+                userView.setVisibility (View.VISIBLE);
                 emptyPage.setVisibility (View.GONE);
                 errorPage.setVisibility (View.GONE);
                 networkPage.setVisibility (View.GONE);
                 if (defineLoadingPage != null) {
-
                     defineLoadingPage.setVisibility (View.GONE);
                 } else {
                     loadingPage.setVisibility (View.GONE);
@@ -224,7 +226,7 @@ public class LoadingLayout extends CoordinatorLayout {
 
             case Loading:
 
-                contentView.setVisibility (View.GONE);
+                userView.setVisibility (View.GONE);
                 emptyPage.setVisibility (View.GONE);
                 errorPage.setVisibility (View.GONE);
                 networkPage.setVisibility (View.GONE);
@@ -237,7 +239,7 @@ public class LoadingLayout extends CoordinatorLayout {
 
             case Empty:
 
-                contentView.setVisibility (View.GONE);
+                userView.setVisibility (View.GONE);
                 emptyPage.setVisibility (View.VISIBLE);
                 errorPage.setVisibility (View.GONE);
                 networkPage.setVisibility (View.GONE);
@@ -250,7 +252,7 @@ public class LoadingLayout extends CoordinatorLayout {
 
             case Error:
 
-                contentView.setVisibility (View.GONE);
+                userView.setVisibility (View.GONE);
                 loadingPage.setVisibility (View.GONE);
                 emptyPage.setVisibility (View.GONE);
                 errorPage.setVisibility (View.VISIBLE);
@@ -264,7 +266,7 @@ public class LoadingLayout extends CoordinatorLayout {
 
             case No_Network:
 
-                contentView.setVisibility (View.GONE);
+                userView.setVisibility (View.GONE);
                 loadingPage.setVisibility (View.GONE);
                 emptyPage.setVisibility (View.GONE);
                 errorPage.setVisibility (View.GONE);
@@ -286,17 +288,19 @@ public class LoadingLayout extends CoordinatorLayout {
      * 设置标题栏
      *
      * @return
+     * @param linearLayout
      */
-    public LoadingLayout setToolbarView () {
-        mAppBarLayout = (AppBarLayout) mInflate.inflate (toolbarLayoutId, this, false);
+    public LoadingLayout setToolbarView (LinearLayout linearLayout) {
+        mAppBarLayout = (AppBarLayout) mInflate.inflate (toolbarLayoutId, rootView, false);
         toolbarView = (Toolbar) mAppBarLayout.findViewById (R.id.toolbar);
+
         /*将标题栏布局添加到toolbar中*/
         mInflate.inflate (titleResId, toolbarView);
         /*如果是默认的标题栏布局*/
         if (titleResId == R.layout.layout_default_title) {
             ToolbarManager.getInstance ().initToolbar (toolbarView);
         }
-        addView (mAppBarLayout);
+        linearLayout.addView (mAppBarLayout);
         return this;
     }
 
@@ -525,9 +529,9 @@ public class LoadingLayout extends CoordinatorLayout {
     public LoadingLayout setLoadingPage (View view) {
 
         defineLoadingPage = view;
-        this.removeView (loadingPage);
+        rootView.removeView (loadingPage);
         defineLoadingPage.setVisibility (View.GONE);
-        this.addView (view);
+        rootView.addView (view);
         return this;
     }
 
@@ -538,11 +542,11 @@ public class LoadingLayout extends CoordinatorLayout {
      */
     public LoadingLayout setLoadingPage (@LayoutRes int id) {
 
-        this.removeView (loadingPage);
+        rootView.removeView (loadingPage);
         View view = mInflate.inflate (id, null);
         defineLoadingPage = view;
         defineLoadingPage.setVisibility (View.GONE);
-        this.addView (view);
+        rootView.addView (view);
         return this;
     }
 
@@ -588,7 +592,7 @@ public class LoadingLayout extends CoordinatorLayout {
     /**
      * 全局配置的Class，对所有使用到的地方有效
      */
-    private static class Config {
+    public static class Config {
 
         public Config setErrorText (@NonNull String text) {
 

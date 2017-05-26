@@ -10,11 +10,11 @@ import com.android.core.manager.ToastManager;
 public abstract class BaseMvpCoreActivity<P extends MvpPresenter> extends BaseCoreActivity
     implements BaseCoreView {
 
-    private P presenter;
+    protected P presenter;
 
     @Override protected void onCreate (Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
-        createPresenter ();
+        presenter = createPresenter ();
         if (presenter == null) {
             throw new RuntimeException ("The method createPresenter return null");
         }

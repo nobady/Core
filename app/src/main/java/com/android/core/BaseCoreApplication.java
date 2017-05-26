@@ -10,6 +10,7 @@ import com.apkfuns.logutils.LogUtils;
 
 public class BaseCoreApplication extends Application {
 
+
     @Override public void onCreate () {
         super.onCreate ();
 

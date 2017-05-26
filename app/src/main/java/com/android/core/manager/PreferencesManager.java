@@ -45,7 +45,7 @@ public class PreferencesManager {
 
     public static void init(Context context, String prefsname, int mode) {
         prefsUtil = new PreferencesManager ();
-        prefsUtil.context = context;
+        prefsUtil.context = context.getApplicationContext ();
         prefsUtil.prefs = prefsUtil.context.getSharedPreferences(prefsname, mode);
         prefsUtil.editor = prefsUtil.prefs.edit();
     }

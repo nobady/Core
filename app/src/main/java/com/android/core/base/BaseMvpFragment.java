@@ -2,7 +2,9 @@ package com.android.core.base;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import com.android.core.manager.LoadingLayout;
 import com.android.core.manager.ToastManager;
 
@@ -14,13 +16,15 @@ public abstract class BaseMvpFragment<P extends MvpPresenter> extends BaseCoreFr
 
     protected P presenter;
 
-    @Override public void onViewCreated (View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated (view, savedInstanceState);
-        createPresenter ();
+    @Nullable @Override
+    public View onCreateView (LayoutInflater inflater, @Nullable ViewGroup container,
+        @Nullable Bundle savedInstanceState) {
+        presenter = createPresenter ();
         if (presenter == null) {
             throw new RuntimeException ("The method createPresenter return null");
         }
         presenter.attachView (this);
+        return super.onCreateView (inflater, container, savedInstanceState);
     }
 
     protected abstract P createPresenter ();

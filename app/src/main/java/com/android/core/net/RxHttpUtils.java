@@ -73,10 +73,6 @@ public class RxHttpUtils {
             .setNetworkInterceptor (mNetWorkInterceptor);
     }
 
-    private static class SingleTon {
-        private static RxHttpUtils INSTANCE = new RxHttpUtils ();
-    }
-
     /**
      * 获取全局信息配置对象
      *
@@ -92,7 +88,7 @@ public class RxHttpUtils {
      * @return
      */
     public static RxHttpUtils getInstance () {
-        return SingleTon.INSTANCE;
+        return new RxHttpUtils ();
     }
 
     public RxHttpUtils setUrl (String url) {
@@ -120,9 +116,11 @@ public class RxHttpUtils {
         return this;
     }
 
-    public RxHttpUtils setInterceptor (Interceptor interceptor) {
+    public RxHttpUtils addInterceptor (Interceptor interceptor) {
         isTemp = true;
-        tempList.add (interceptor);
+        if (interceptor != null) {
+            tempList.add (interceptor);
+        }
         return this;
     }
 
@@ -144,7 +142,7 @@ public class RxHttpUtils {
     /**
      * 网络请求全局配置类
      */
-    private static class NetConfig {
+    public static class NetConfig {
 
         public NetConfig setLoggingInterceptor (Interceptor loggingInterceptor) {
             mLoggingInterceptor = loggingInterceptor;

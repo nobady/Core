@@ -61,13 +61,14 @@ public abstract class BaseCoreFragment extends Fragment{
     @Nullable @Override
     public View onCreateView (LayoutInflater inflater, @Nullable ViewGroup container,
         @Nullable Bundle savedInstanceState) {
-        mLoadingLayout = new LoadingLayout (getContext (),getLayoutResId (),0,0);
+        View view = LayoutInflater.from (getContext ()).inflate (getLayoutResId (), null);
+        mLoadingLayout = new LoadingLayout (getContext (),view,0,null);
         mLoadingLayout.setOnReloadListener (new LoadingLayout.OnReloadListener () {
             @Override public void onReload (View v) {
                 onReloadClick ();
             }
         });
-        return mLoadingLayout;
+        return mLoadingLayout.getRootView ();
     }
 
     @Override public void onViewCreated (View view, @Nullable Bundle savedInstanceState) {
@@ -77,7 +78,7 @@ public abstract class BaseCoreFragment extends Fragment{
         lazyLoad ();
     }
 
-    public abstract void onReloadClick();
+    public void onReloadClick(){};
 
     @LayoutRes
     public abstract int getLayoutResId();

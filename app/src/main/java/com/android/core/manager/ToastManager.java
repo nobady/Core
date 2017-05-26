@@ -20,7 +20,7 @@ public class ToastManager {
      */
     public static void showShort(Context context, CharSequence message) {
         if (null == toast) {
-            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+            toast = Toast.makeText(context.getApplicationContext (), message, Toast.LENGTH_SHORT);
         } else {
             toast.setText(message);
         }
@@ -36,7 +36,7 @@ public class ToastManager {
      */
     public static void showShort(Context context, int message) {
         if (null == toast) {
-            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+            toast = Toast.makeText(context.getApplicationContext (), message, Toast.LENGTH_SHORT);
         } else {
             toast.setText(message);
         }
@@ -52,7 +52,7 @@ public class ToastManager {
      */
     public static void showLong(Context context, CharSequence message) {
         if (null == toast) {
-            toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+            toast = Toast.makeText(context.getApplicationContext (), message, Toast.LENGTH_LONG);
         } else {
             toast.setText(message);
         }
@@ -68,7 +68,7 @@ public class ToastManager {
      */
     public static void showLong(Context context, int message) {
         if (null == toast) {
-            toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+            toast = Toast.makeText(context.getApplicationContext (), message, Toast.LENGTH_LONG);
         } else {
             toast.setText(message);
         }
@@ -85,7 +85,7 @@ public class ToastManager {
      */
     public static void show(Context context, CharSequence message, int duration) {
         if (null == toast) {
-            toast = Toast.makeText(context, message, duration);
+            toast = Toast.makeText(context.getApplicationContext (), message, duration);
         } else {
             toast.setText(message);
         }
@@ -102,7 +102,7 @@ public class ToastManager {
      */
     public static void show(Context context, int message, int duration) {
         if (null == toast) {
-            toast = Toast.makeText(context, message, duration);
+            toast = Toast.makeText(context.getApplicationContext (), message, duration);
         } else {
             toast.setText(message);
         }
@@ -119,8 +119,7 @@ public class ToastManager {
 
     public static void showShortTop(Context context, CharSequence message) {
         if (null == toast) {
-            System.out.println(message+"Toast");
-            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+            toast = Toast.makeText(context.getApplicationContext (), message, Toast.LENGTH_SHORT);
         } else {
             toast.setText(message);
         }
@@ -130,8 +129,7 @@ public class ToastManager {
 
     public static void showLongTop(Context context, CharSequence message) {
         if (null == toast) {
-            System.out.println(message+"Toast");
-            toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+            toast = Toast.makeText(context.getApplicationContext (), message, Toast.LENGTH_LONG);
         } else {
             toast.setText(message);
         }
